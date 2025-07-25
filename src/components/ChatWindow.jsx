@@ -12,22 +12,22 @@ export default function ChatWindow() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // --- Helper to clean API response ---
+  // --- Final Cleaner for API Response ---
   const cleanAssistantResponse = (raw) => {
   return raw
-    // Remove tool/debug info like "}, isContinued:false}" or "{toolCallId...}"
-    .replace(/\},\s*isContinued:false\}/gi, "")
-    .replace(/\{.*?\}/g, "") // remove any leftover {...} blocks
-    // Remove token indexes and quotes
+    // Remove debugging prefixes (f:, a:, e:, d:)
+    .replace(/\b(f:|a:|e:|d:)\b/gi, "")
+    // Remove isContinued:false and curly braces
+    .replace(/isContinued:false/gi, "")
+    .replace(/\{[^}]*\}/g, "")
+    // Remove token indexes like 9:" and extra quotes
     .replace(/\d+:"/g, "")
     .replace(/"/g, "")
-    // Fix common spacing issues
+    // Fix spacing
     .replace(/\s*\.\s*/g, ". ")
     .replace(/\s*,\s*/g, ", ")
-    .replace(/\s*\(\s*/g, " (")
-    .replace(/\s*\)\s*/g, ") ")
-    .replace(/\s*%\s*/g, "% ")
     .replace(/\s*°\s*C/g, "°C")
+    .replace(/\s*%\s*/g, "% ")
     .replace(/\s+/g, " ")
     .trim();
 };
@@ -77,7 +77,7 @@ export default function ChatWindow() {
         if (value) {
           const chunk = decoder.decode(value, { stream: true });
 
-          // Clean response chunk
+          // Clean the incoming text
           let cleaned = cleanAssistantResponse(chunk);
 
           // Keep only human-readable weather summary if present
@@ -86,7 +86,6 @@ export default function ChatWindow() {
 
           if (cleaned) fullMessage += cleaned + " ";
 
-          // Update streaming message
           setMessages((prev) => {
             const updated = [...prev];
             updated[updated.length - 1] = {

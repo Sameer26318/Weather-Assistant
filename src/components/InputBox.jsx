@@ -1,30 +1,34 @@
 import React, { useState } from "react";
-import { FiSend } from "react-icons/fi";
 import "./InputBox.css";
 
 export default function InputBox({ onSend, disabled }) {
-  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
 
   const handleSend = () => {
-    if (text.trim()) {
-      onSend(text);
-      setText("");
+    if (!input.trim()) return;
+    onSend(input);
+    setInput("");
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
   return (
-    <div className="input-wrapper">
+    <div className="input-box">
       <input
-        className="input-field"
         type="text"
-        value={text}
-        disabled={disabled}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSend()}
         placeholder="Ask about weather..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={handleKeyPress}
+        disabled={disabled}
       />
-      <button className="send-btn" onClick={handleSend} disabled={disabled}>
-        <FiSend size={18} />
+      <button onClick={handleSend} disabled={disabled}>
+        ➤
       </button>
     </div>
   );
